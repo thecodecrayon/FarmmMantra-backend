@@ -1,13 +1,13 @@
-const { Inquiry, Product } = require("../../models/index.js");
+const { Inquiries, Products } = require("../../models/index.js");
 const { asyncHandler, formatToJSON } = require("../../utils/index.js");
 
 const listInquiries = asyncHandler(async (req, res) => {
   const inquiries = formatToJSON(
-    await Inquiry.findAll({
+    await Inquiries.findAll({
       attributes: ["id", "name", "email", "message"],
       include: [
         {
-          model: Product,
+          model: Products,
           attributes: ["id", "name"],
         },
       ],
@@ -30,7 +30,7 @@ const createNewInquiry = asyncHandler(async (req, res) => {
   if (!name || !phone || !message)
     throw new Error("Missing fields! Please provide required fields.");
 
-  const inquiry = formatToJSON(await Inquiry.create({ ...req.body }));
+  const inquiry = formatToJSON(await Inquiries.create({ ...req.body }));
 
   if (!inquiry)
     throw new Error("Unable to create an inquiry. Some error occured!");

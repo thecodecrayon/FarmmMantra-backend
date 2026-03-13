@@ -1,9 +1,9 @@
-const { Artisan, Category, Product } = require("../../models/index.js");
+const { Artisans, Categories, Products } = require("../../models/index.js");
 const { uploadFileOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler, formatToJSON } = require("../../utils/index.js");
 
 const listProducts = asyncHandler(async (req, res) => {
-  const products = await Product.findAll({
+  const products = await Products.findAll({
     where: {
       isDeleted: 0,
     },
@@ -22,11 +22,11 @@ const listProducts = asyncHandler(async (req, res) => {
     ],
     include: [
       {
-        model: Category,
+        model: Categories,
         attributes: ["id", "name", "image"],
       },
       {
-        model: Artisan,
+        model: Artisans,
         attributes: ["id", "name", "image"],
       },
     ],
@@ -85,7 +85,7 @@ const createNewProduct = asyncHandler(async (req, res) => {
 
   //   CREATING NEW PRODUCT;
   const newProduct = formatToJSON(
-    await Product.create({
+    await Products.create({
       artisanId,
       categoryId,
       description,
@@ -112,7 +112,7 @@ const createNewProduct = asyncHandler(async (req, res) => {
 
 const listProductOptions = asyncHandler(async (req, res) => {
   const categories = formatToJSON(
-    await Category.findAll({
+    await Categories.findAll({
       where: {
         isDeleted: 0,
       },
@@ -124,7 +124,7 @@ const listProductOptions = asyncHandler(async (req, res) => {
     throw new Error("Unable to fetch categories. Some error occured!");
 
   const artisans = formatToJSON(
-    await Artisan.findAll({
+    await Artisans.findAll({
       where: {
         isDeleted: 0,
       },
@@ -149,7 +149,7 @@ const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // CHECK IF THE PRODUCT EXISTS WITHIN THIS ID;
-  let product = await Product.count({
+  let product = await Products.count({
     where: {
       id,
       isDeleted: 0,
@@ -164,7 +164,7 @@ const getProductById = asyncHandler(async (req, res) => {
     });
 
   product = formatToJSON(
-    await Product.findOne({
+    await Products.findOne({
       where: {
         id,
         isDeleted: 0,
@@ -183,7 +183,7 @@ const getProductById = asyncHandler(async (req, res) => {
       ],
       include: [
         {
-          model: Artisan,
+          model: Artisans,
           attributes: [
             "id",
             "name",
@@ -216,7 +216,7 @@ const getProductsByCategory = asyncHandler(async (req, res) => {
 
   // Get category
   const category = formatToJSON(
-    await Category.findOne({
+    await Categories.findOne({
       where: {
         id,
         isDeleted: 0,
@@ -228,7 +228,7 @@ const getProductsByCategory = asyncHandler(async (req, res) => {
   if (!category) throw new Error("Category not found!");
 
   // Get products separately
-  const products = await Product.findAll({
+  const products = await Products.sfindAll({
     where: {
       categoryId: id,
       isDeleted: 0,
@@ -239,7 +239,7 @@ const getProductsByCategory = asyncHandler(async (req, res) => {
   });
 
   // Get total count
-  const totalCount = await Product.count({
+  const totalCount = await Products.count({
     where: {
       categoryId: id,
       isDeleted: 0,

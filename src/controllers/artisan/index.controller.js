@@ -1,4 +1,4 @@
-const { Artisan } = require("../../models/index.js");
+const { Artisans } = require("../../models/index.js");
 const { asyncHandler, formatToJSON } = require("../../utils/index.js");
 const { uploadFileOnCloudinary } = require("../../utils/cloudinary.js");
 
@@ -39,7 +39,7 @@ const createArtisan = asyncHandler(async (req, res) => {
 
   // CREATING NEW CATEGORY;
   const newArtisan = formatToJSON(
-    await Artisan.create({
+    await Artisans.create({
       badges,
       description,
       image: clImgUrl,
@@ -65,7 +65,7 @@ const createArtisan = asyncHandler(async (req, res) => {
 
 const listArtisans = asyncHandler(async (req, res) => {
   const artisans = formatToJSON(
-    await Artisan.findAll({
+    await Artisans.findAll({
       where: {
         isDeleted: 0,
       },

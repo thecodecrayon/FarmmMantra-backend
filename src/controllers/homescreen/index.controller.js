@@ -1,10 +1,10 @@
 const { asyncHandler } = require("../../utils/index.js");
-const { Category, Product, Artisan } = require("../../models/index.js");
+const { Categories, Products } = require("../../models/index.js");
 const { Op } = require("sequelize");
 
 const getHomescreenData = asyncHandler(async (req, res) => {
   // GET 7 CATEGORIES WITH NAME AND IMAGE
-  const categories = await Category.findAll({
+  const categories = await Categories.findAll({
     where: {
       isDeleted: 0,
     },
@@ -16,7 +16,7 @@ const getHomescreenData = asyncHandler(async (req, res) => {
   // GET ALL PRODUCTS FOR THESE CATEGORIES AT ONCE
   const categoryIds = categories.map((cat) => cat.id);
 
-  const allProducts = await Product.findAll({
+  const allProducts = await Products.findAll({
     where: {
       categoryId: {
         [Op.in]: categoryIds,

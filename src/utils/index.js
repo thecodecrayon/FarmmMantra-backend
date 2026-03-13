@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = (requestHandler) => {
   return (req, res, next) => {
     Promise.resolve(requestHandler(req, res, next)).catch((err) => {
+      console.log("Error:", err);
       return res.status(500).json({
         status: false,
         msg: err.message || err,

@@ -1,4 +1,4 @@
-const { User } = require("../../models/index.js");
+const { Users } = require("../../models/index.js");
 const {
   asyncHandler,
   formatToJSON,
@@ -9,7 +9,7 @@ const { Op } = require("sequelize");
 
 const getAllUsers = asyncHandler(async (req, res) => {
   let allUsers = formatToJSON(
-    await User.findAll({
+    await Users.findAll({
       where: {
         id: {
           [Op.ne]: req.user?.id,
@@ -38,7 +38,7 @@ const createNewUser = asyncHandler(async (req, res) => {
     password,
   };
 
-  let newUser = formatToJSON(await User.create(newUserObj));
+  let newUser = formatToJSON(await Users.create(newUserObj));
 
   if (!newUser) {
     throw new Error("Unable to create new user. Some error occured!");
@@ -50,7 +50,7 @@ const createNewUser = asyncHandler(async (req, res) => {
   });
 
   let user = formatToJSON(
-    await User.findOne({
+    await Users.findOne({
       where: {
         phone: phone,
       },
@@ -70,7 +70,7 @@ const getUserById = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 
   let user = formatToJSON(
-    await User.findOne({
+    await Users.findOne({
       where: {
         id: userId,
       },
@@ -91,7 +91,7 @@ const loginUser = asyncHandler(async (req, res) => {
   let { phone, password } = req.body;
 
   let user = formatToJSON(
-    await User.findOne({
+    await Users.findOne({
       where: {
         phone,
       },
@@ -100,10 +100,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!user) throw new Error("Couldn't login. Invalid phone or password!");
 
-  let isValidPassword = await bcrypt.compare(password, user?.password);
+  // let isValidPassword = await bcrypt.compare(password, user?.password);
+  // SINCE IT'S A SIMPLE 1-USER LOGIN FOR ADMIN PANEL WITH RESET FUNCTIONALITY, I'M DISABLING HASHING;
+  let isValidPassword = password === user?.password;
 
   if (!isValidPassword)
-    throw new Error("Couldn't login. Invalid email or password!");
+    throw new Error("Couldn't login. Invalid phone or password!");
 
   let { accessToken } = generateAccessToken({
     id: user?.id,
@@ -111,7 +113,7 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 
   user = formatToJSON(
-    await User.findOne({
+    await Users.findOne({
       where: {
         phone,
       },

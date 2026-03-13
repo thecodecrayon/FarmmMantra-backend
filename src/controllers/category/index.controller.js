@@ -1,4 +1,4 @@
-const { Category, Product, sequelize } = require("../../models/index.js");
+const { Categories, Products, sequelize } = require("../../models/index.js");
 const { asyncHandler, formatToJSON } = require("../../utils/index.js");
 const { uploadFileOnCloudinary } = require("../../utils/cloudinary.js");
 
@@ -18,7 +18,7 @@ const createCategory = asyncHandler(async (req, res) => {
 
   //   CREATING NEW CATEGORY;
   const newCategory = formatToJSON(
-    await Category.create({
+    await Categories.create({
       name,
       description,
       image: clImgUrl,
@@ -37,7 +37,7 @@ const createCategory = asyncHandler(async (req, res) => {
 
 const listCategories = asyncHandler(async (req, res) => {
   const categories = formatToJSON(
-    await Category.findAll({
+    await Categories.findAll({
       where: {
         isDeleted: 0,
       },
@@ -48,16 +48,16 @@ const listCategories = asyncHandler(async (req, res) => {
       },
       include: [
         {
-          model: Product,
+          model: Products,
           attributes: [],
           required: false,
         },
       ],
       group: [
-        "Category.id",
-        "Category.name",
-        "Category.image",
-        "Category.description",
+        "Categories.id",
+        "Categories.name",
+        "Categories.image",
+        "Categories.description",
       ],
     }),
   );

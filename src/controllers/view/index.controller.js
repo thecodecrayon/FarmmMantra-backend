@@ -1,9 +1,9 @@
 const { Op } = require("sequelize");
 const {
-  Artisan,
-  Category,
-  Product,
-  View,
+  Artisans,
+  Categories,
+  Products,
+  Views,
   sequelize,
 } = require("../../models/index.js");
 const { asyncHandler } = require("../../utils/index.js");
@@ -11,7 +11,7 @@ const { asyncHandler } = require("../../utils/index.js");
 const getViewsByProduct = asyncHandler(async (req, res) => {
   const { productId } = req.params;
 
-  const viewCount = await View.count({
+  const viewCount = await Views.count({
     where: {
       productId,
     },
@@ -43,7 +43,7 @@ const addViewsByProduct = asyncHandler(async (req, res) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const existingView = await View.findOne({
+  const existingView = await Views.findOne({
     where: {
       productId,
       ipAddress: ipAddress,
@@ -55,7 +55,7 @@ const addViewsByProduct = asyncHandler(async (req, res) => {
 
   if (existingView) {
     // DON'T CREATE DUPLICATE, BUT STILL RETURN SUCCESS WITH CURRENT COUNT;
-    const viewCount = await View.count({
+    const viewCount = await Views.count({
       where: {
         productId,
       },
@@ -72,13 +72,13 @@ const addViewsByProduct = asyncHandler(async (req, res) => {
   }
 
   // CREATING NEW VIEW;
-  await View.create({
+  await Views.create({
     productId,
     ipAddress: ipAddress,
   });
 
   // GETTING UPDATED COUNT;
-  const viewCount = await View.count({
+  const viewCount = await Views.count({
     where: {
       productId,
     },
@@ -96,17 +96,17 @@ const addViewsByProduct = asyncHandler(async (req, res) => {
 
 const getOverallViews = asyncHandler(async (req, res) => {
   // GET TOTAL VIEW COUNT ACROSS ALL PRODUCTS
-  const totalViews = await View.count();
+  const totalViews = await Views.count();
 
   // GET TOTAL PRODUCTS
-  const totalProducts = await Product.count({
+  const totalProducts = await Products.count({
     where: {
       isDeleted: 0,
     },
   });
 
   // GET ACTIVE LISTINGS (products with stock > 0)
-  const activeListings = await Product.count({
+  const activeListings = await Products.count({
     where: {
       isDeleted: 0,
       defaultQuantity: {
@@ -116,14 +116,14 @@ const getOverallViews = asyncHandler(async (req, res) => {
   });
 
   // GET TOTAL ARTISANS
-  const totalArtisans = await Artisan.count({
+  const totalArtisans = await Artisans.count({
     where: {
       isDeleted: 0,
     },
   });
 
   // GET TOTAL CATEGORIES
-  const totalCategories = await Category.count({
+  const totalCategories = await Categories.count({
     where: {
       isDeleted: 0,
     },
@@ -134,7 +134,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const viewsThisMonth = await View.count({
+  const viewsThisMonth = await Views.count({
     where: {
       createdAt: {
         [Op.gte]: startOfMonth,
@@ -146,7 +146,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
   const startOfLastMonth = new Date(startOfMonth);
   startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
 
-  const viewsLastMonth = await View.count({
+  const viewsLastMonth = await Views.count({
     where: {
       createdAt: {
         [Op.gte]: startOfLastMonth,
@@ -162,7 +162,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
       : 0;
 
   // GET PRODUCTS ADDED THIS MONTH
-  const productsThisMonth = await Product.count({
+  const productsThisMonth = await Products.count({
     where: {
       isDeleted: 0,
       createdAt: {
@@ -171,7 +171,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
     },
   });
 
-  const productsLastMonth = await Product.count({
+  const productsLastMonth = await Products.count({
     where: {
       isDeleted: 0,
       createdAt: {
@@ -189,7 +189,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
       : 0;
 
   // GET ARTISANS ADDED THIS MONTH
-  const artisansThisMonth = await Artisan.count({
+  const artisansThisMonth = await Artisans.count({
     where: {
       isDeleted: 0,
       createdAt: {
@@ -198,7 +198,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
     },
   });
 
-  const artisansLastMonth = await Artisan.count({
+  const artisansLastMonth = await Artisans.count({
     where: {
       isDeleted: 0,
       createdAt: {
@@ -216,14 +216,14 @@ const getOverallViews = asyncHandler(async (req, res) => {
       : 0;
 
   // GET VIEW COUNT PER PRODUCT (TOP PRODUCTS)
-  const viewsByProduct = await View.findAll({
+  const viewsByProduct = await Views.findAll({
     attributes: [
       "productId",
-      [sequelize.fn("COUNT", sequelize.col("View.id")), "viewCount"],
+      [sequelize.fn("COUNT", sequelize.col("Views.id")), "viewCount"],
     ],
     include: [
       {
-        model: Product,
+        model: Products,
         attributes: ["id", "name", "images"],
         required: true,
         where: {
@@ -231,8 +231,13 @@ const getOverallViews = asyncHandler(async (req, res) => {
         },
       },
     ],
-    group: ["View.productId", "Product.id", "Product.name", "Product.images"],
-    order: [[sequelize.fn("COUNT", sequelize.col("View.id")), "DESC"]],
+    group: [
+      "Views.productId",
+      "Products.id",
+      "Products.name",
+      "Products.images",
+    ],
+    order: [[sequelize.fn("COUNT", sequelize.col("Views.id")), "DESC"]],
     limit: 10,
   });
 
@@ -245,13 +250,13 @@ const getOverallViews = asyncHandler(async (req, res) => {
   }));
 
   // GET TOP CATEGORIES BY VIEW COUNT
-  const topCategories = await View.findAll({
+  const topCategories = await Views.findAll({
     attributes: [
-      [sequelize.fn("COUNT", sequelize.col("View.id")), "viewCount"],
+      [sequelize.fn("COUNT", sequelize.col("Views.id")), "viewCount"],
     ],
     include: [
       {
-        model: Product,
+        model: Products,
         attributes: [],
         required: true,
         where: {
@@ -259,7 +264,7 @@ const getOverallViews = asyncHandler(async (req, res) => {
         },
         include: [
           {
-            model: Category,
+            model: Categories,
             attributes: ["id", "name"],
             required: true,
             where: {
@@ -269,8 +274,8 @@ const getOverallViews = asyncHandler(async (req, res) => {
         ],
       },
     ],
-    group: ["Product->Category.id", "Product->Category.name"],
-    order: [[sequelize.fn("COUNT", sequelize.col("View.id")), "DESC"]],
+    group: ["Products->Categories.id", "Products->Categories.name"],
+    order: [[sequelize.fn("COUNT", sequelize.col("Views.id")), "DESC"]],
     limit: 5,
     raw: true,
   });
@@ -281,8 +286,8 @@ const getOverallViews = asyncHandler(async (req, res) => {
 
   // FORMAT TOP CATEGORIES
   const formattedTopCategories = topCategories.map((item) => ({
-    id: item["Product.Category.id"],
-    name: item["Product.Category.name"],
+    id: item["Products.Categories.id"],
+    name: item["Products.Categories.name"],
     viewCount: parseInt(item.viewCount),
     percentage: Math.round((parseInt(item.viewCount) / maxCategoryViews) * 100),
   }));
